@@ -110,7 +110,7 @@ static BOOL resolve_il2cpp(void)
     #define R(sym, var)                                        \
         do { var = NULL;                                       \
              for (int _i = 0; _i < 2 && !var; _i++)             \
-                 var = (void*)dlsym(scope[_i], sym); } while (0)
+                 *(void **)&var = dlsym(scope[_i], sym); } while (0)
     R("il2cpp_domain_get",            p_domain_get);
     R("il2cpp_thread_attach",         p_thread_attach);
     R("il2cpp_domain_get_assemblies", p_domain_get_assemblies);
