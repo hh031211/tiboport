@@ -1,0 +1,43 @@
+name: build-tiboport
+
+# 没有 Mac 也能编译：推代码到 GitHub，这里用 macOS 跑 xcrun clang，产出 TiboPort.dylib
+# 仓库结构（就这三样，直接放在仓库根目录）：
+#   Makefile
+#   src/TiboPort.mm
+#   .github/workflows/build.yml
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 显示工具链
+        run: |
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-path
+          xcrun --sdk iphoneos --show-sdk-version
+
+      - name: 编译 arm64 dylib
+        run: |
+          make clean || true
+          make
+
+      - name: 校验产物
+        run: |
+          file TiboPort.dylib
+          xcrun --sdk iphoneos otool -hv TiboPort.dylib
+          xcrun --sdk iphoneos otool -l TiboPort.dylib | grep -E "LC_ID_DYLIB|LC_BUILD_VERSION|name @" -A1 | head -20
+          codesign -dv TiboPort.dylib || true
+          shasum -a 256 TiboPort.dylib
+
+      - name: 上传产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: TiboPort-dylib
+          path: TiboPort.dylib
+          if-no-files-found: error
