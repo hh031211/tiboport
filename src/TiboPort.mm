@@ -111,7 +111,7 @@ static BOOL resolve_il2cpp(void)
         do {                                                   \
             var = NULL;                                        \
             for (int _i = 0; _i < 2 && !var; _i++)              \
-                var = (void*)dlsym(scope[_i], sym);             \
+                *(void **)&var = dlsym(scope[_i], sym);             \
         } while (0)
 
     R("il2cpp_domain_get",            p_domain_get);
